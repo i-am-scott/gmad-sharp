@@ -7,14 +7,19 @@
             if (args is null || args[0].Length == 0)
                 return;
 
-            Gmad gmad = new(args[0])
+            string path = Path.GetFullPath(args[0]);
+            Console.WriteLine("Creating " + path + "\n\n");
+
+            Gmad gmad = new(path)
             {
-                name = Path.GetFileNameWithoutExtension(args[0]),
-                description = "This is a pack of dicks"
+                name = Path.GetFileNameWithoutExtension(path.TrimEnd(Path.DirectorySeparatorChar)),
+                description = "A description for my GMA"
             };
 
             gmad.Write();
-            gmad.SaveFile(gmad.name + ".gma");            
+            gmad.SaveFile(gmad.name + ".gma");
+
+            Console.WriteLine("\nCompleted.");
         }
     }
 }

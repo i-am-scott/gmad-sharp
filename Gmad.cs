@@ -3,23 +3,6 @@ using System.Text;
 
 namespace umad
 {
-    public static class UtilExtentions
-    {
-        public static string RelativeFromFolder(this string path, string folder)
-        {
-            Uri pathUri = new Uri(path);
-            Uri folderUri = new Uri(folder + Path.DirectorySeparatorChar);
-
-            return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Substring(3));
-        }
-
-        public static void WriteTerminated(this BinaryWriter writer, string value)
-        {
-            writer.Write(Encoding.ASCII.GetBytes(value));
-            writer.Write((byte)0);
-        }
-    }
-
     public class GMAFile
     {
         public string? path = null;
@@ -67,21 +50,21 @@ namespace umad
         public string description = "Its a GMA";
         public string author = "Superman";
 
+        public List<GMAFile> files { get; protected set; } = new List<GMAFile>();
         protected byte[]? data;
-        protected List<GMAFile> files = new List<GMAFile>();
 
         public Gmad(string dir)
         {
             if (!Directory.Exists(dir))
                 throw new DirectoryNotFoundException(dir);
 
+            if (!dir.EndsWith(Path.DirectorySeparatorChar))
+            {
+                dir += Path.DirectorySeparatorChar;
+            }
+
             folder = dir;
             GetFiles(folder);
-
-            Console.WriteLine(dir);
-            Console.WriteLine(files.Count);
-            Console.WriteLine();
-            Console.WriteLine("Compiling...");
         }
 
         private void GetFiles(string dir)
@@ -91,13 +74,17 @@ namespace umad
                 foreach (string fp in Directory.GetFiles(dp))
                 {
                     byte[] file = File.ReadAllBytes(fp);
-                    files.Add(new GMAFile()
+
+                    GMAFile gmaFile = new()
                     {
                         crc = Util.Crc32(file),
                         path = fp.RelativeFromFolder(folder),
                         data = file,
                         size = file.LongLength
-                    });
+                    };
+
+                    files.Add(gmaFile);
+                    Console.WriteLine(files.Count + " " + gmaFile.path);
                 }
                 GetFiles(dp);
             }
@@ -139,7 +126,6 @@ namespace umad
 
                     foreach (GMAFile file in files)
                     {
-                        Console.WriteLine(file.path);
                         writer.Write(file.data);
                     }
 

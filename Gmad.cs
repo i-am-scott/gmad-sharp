@@ -6,8 +6,8 @@ namespace umad
     public class GMAFile
     {
         public string? path = null;
+        public string? fullpath = null;
         public long size;
-        public byte[]? data = null;
         public uint crc;
     }
 
@@ -42,7 +42,7 @@ namespace umad
         };
 
         public int version = 3;
-        public long steamid = 234235235326L;
+        public ulong steamid = 0UL;
         public ulong timestamp = (ulong)DateTimeOffset.Now.ToUnixTimeSeconds();
 
         public string extension = "gma";
@@ -73,20 +73,23 @@ namespace umad
             {
                 foreach (string fp in Directory.GetFiles(dp))
                 {
-                    byte[] file = File.ReadAllBytes(fp);
+                    byte[] data = File.ReadAllBytes(fp);
 
                     GMAFile gmaFile = new()
                     {
-                        crc = Util.Crc32(file),
+                        fullpath = fp,
                         path = fp.RelativeFromFolder(folder),
-                        data = file,
-                        size = file.LongLength
+                        size = data.LongLength
                     };
 
                     files.Add(gmaFile);
+                    data = null;
+
                     Console.WriteLine(files.Count + " " + gmaFile.path);
                 }
+
                 GetFiles(dp);
+
             }
         }
 
@@ -99,9 +102,12 @@ namespace umad
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    writer.Write("GMAD");
+                    writer.Write('G');
+                    writer.Write('M');
+                    writer.Write('A');
+                    writer.Write('D');
                     writer.Write((char)version);
-                    writer.Write((ulong)0);
+                    writer.Write(steamid);
                     writer.Write((ulong)DateTimeOffset.Now.ToUnixTimeSeconds());
                     writer.Write((char)0);
 
@@ -119,14 +125,15 @@ namespace umad
                         writer.Write(c);
                         writer.WriteTerminated(file.path.ToLower());
                         writer.Write(file.size);
-                        writer.Write(file.crc);
+                        writer.Write(0u);
                     }
 
-                    writer.Write((uint)0);
+                    writer.Write(0u);
 
                     foreach (GMAFile file in files)
                     {
-                        writer.Write(file.data);
+                        byte[] data = File.ReadAllBytes(file.fullpath);
+                        writer.Write(data);
                     }
 
                     writer.Write(Util.Crc32(stream.ToArray()));

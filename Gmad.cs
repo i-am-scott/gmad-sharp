@@ -84,8 +84,6 @@ namespace umad
 
                     files.Add(gmaFile);
                     data = null;
-
-                    Console.WriteLine(files.Count + " " + gmaFile.path);
                 }
 
                 GetFiles(dp);

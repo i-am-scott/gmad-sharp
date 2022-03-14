@@ -78,7 +78,7 @@ namespace umad
                     GMAFile gmaFile = new()
                     {
                         fullpath = fp,
-                        path = fp.RelativeFromFolder(folder),
+                        path = Path.GetRelativePath(folder, fp),
                         size = data.LongLength
                     };
 
@@ -165,6 +165,10 @@ namespace umad
 
         public void SaveFile(string outFile)
         {
+            string outPath = Path.GetDirectoryName(outFile);
+            if (!Directory.Exists(outPath))
+                Directory.CreateDirectory(outPath);
+
             File.WriteAllBytes(outFile, data);
         }
 

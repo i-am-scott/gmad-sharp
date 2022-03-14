@@ -78,7 +78,7 @@ namespace umad
                     GMAFile gmaFile = new()
                     {
                         fullpath = fp,
-                        path = Path.GetRelativePath(folder, fp),
+                        path = Path.GetRelativePath(folder, fp).Replace(Path.DirectorySeparatorChar, '/'),
                         size = data.LongLength
                     };
 

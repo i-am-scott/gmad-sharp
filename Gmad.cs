@@ -1,4 +1,4 @@
-﻿using SevenZip;
+using SevenZip;
 using System.Text;
 
 namespace umad
@@ -51,7 +51,7 @@ namespace umad
         public string author = "Superman";
 
         public List<GMAFile> files { get; protected set; } = new List<GMAFile>();
-        protected byte[]? data;
+        public byte[]? data { get; protected set; }
 
         public Gmad(string dir)
         {

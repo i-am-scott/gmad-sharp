@@ -10,14 +10,16 @@
             string path = Path.GetFullPath(args[0]);
             Console.WriteLine("Creating " + path + "\n\n");
 
-            Gmad gmad = new(path)
-            {
-                name = Path.GetFileNameWithoutExtension(path.TrimEnd(Path.DirectorySeparatorChar)),
-                description = "A description for my GMA"
-            };
-
+            Gmad gmad = new(path);
             gmad.Write();
-            gmad.SaveFile(gmad.name + ".gma");
+
+            foreach(GMAFile file in gmad.files)
+            {
+                Console.WriteLine("Writing: " + file.path);
+            }
+
+            string fileName = Path.GetFileNameWithoutExtension(path.TrimEnd(Path.DirectorySeparatorChar));
+            gmad.SaveFile(fileName + ".gma");
 
             Console.WriteLine("\nCompleted.");
         }

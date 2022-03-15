@@ -1,5 +1,5 @@
-using SevenZip;
-using System.Text;
+﻿using SevenZip;
+using System.Text.Json;
 
 namespace umad
 {
@@ -11,12 +11,19 @@ namespace umad
         public uint crc;
     }
 
+    public class AddonJson
+    {
+        public string? title { get; set; }
+        public string? description { get; set; }
+        public string[]? tags { get; set; }
+    }
+
     public class Gmad : IDisposable
     {
         string folder;
         public bool compress = false;
-
         static int dictionary = 256000000; // 32MB
+
         static CoderPropID[] propIDs =
         {
             CoderPropID.DictionarySize,
@@ -45,15 +52,13 @@ namespace umad
         public ulong steamid = 0UL;
         public ulong timestamp = (ulong)DateTimeOffset.Now.ToUnixTimeSeconds();
 
-        public string extension = "gma";
-        public string name = "Uknown";
-        public string description = "Its a GMA";
-        public string author = "Superman";
+        public string AddonJsonStr;
+        public AddonJson AddonConfig;
 
         public List<GMAFile> files { get; protected set; } = new List<GMAFile>();
         public byte[]? data { get; protected set; }
 
-        public Gmad(string dir)
+        public Gmad(string dir, AddonJson config = null)
         {
             if (!Directory.Exists(dir))
                 throw new DirectoryNotFoundException(dir);
@@ -64,7 +69,23 @@ namespace umad
             }
 
             folder = dir;
+
             GetFiles(folder);
+            LoadConfig(config);
+        }
+
+        private void LoadConfig(AddonJson config = null)
+        {
+            if (config == null)
+            {
+                AddonJsonStr = File.ReadAllText(folder + "addon.json");
+                AddonConfig = JsonSerializer.Deserialize<AddonJson>(AddonJsonStr);
+            }
+            else
+            {
+                AddonJsonStr = JsonSerializer.Serialize<AddonJson>(config);
+                AddonConfig = config;
+            }
         }
 
         private void GetFiles(string dir)
@@ -87,7 +108,6 @@ namespace umad
                 }
 
                 GetFiles(dp);
-
             }
         }
 
@@ -109,9 +129,9 @@ namespace umad
                     writer.Write((ulong)DateTimeOffset.Now.ToUnixTimeSeconds());
                     writer.Write((char)0);
 
-                    writer.WriteTerminated(name);
-                    writer.WriteTerminated(description);
-                    writer.WriteTerminated(author);
+                    writer.WriteTerminated(AddonConfig.title);
+                    writer.WriteTerminated(AddonJsonStr);
+                    writer.WriteTerminated("Author Name");
                     writer.Write((int)1);
 
                     uint c = 0;
@@ -165,10 +185,7 @@ namespace umad
 
         public void SaveFile(string outFile)
         {
-            string outPath = Path.GetDirectoryName(outFile);
-            if (!Directory.Exists(outPath))
-                Directory.CreateDirectory(outPath);
-
+            Directory.CreateDirectory(Path.GetDirectoryName(outFile));
             File.WriteAllBytes(outFile, data);
         }
 

@@ -13,13 +13,11 @@ namespace umad
 
     public static class Util
     {
-        private static Crc32 Crc = new Crc32();
+        public static uint Crc32(byte[] input, uint seed = 0xFFFFFF)
+            => umad.Crc32.Compute(input, seed);
 
-        public static uint Crc32(byte[] input)
-            => Crc.ComputeChecksum(input);
-
-        public static uint Crc32(string input)
-         => Crc32(Encoding.UTF8.GetBytes(input));
+        public static uint Crc32(string input, uint seed = 0xFFFFFF)
+         => Crc32(Encoding.UTF8.GetBytes(input), seed);
 
         public static void Log(string str)
         {
